@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/solarized.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/nord.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/tomorrow-night-eighties.min.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
@@ -26,9 +25,9 @@
     <style>
         :root {
             --bg-dark: #0f1117;
-            --panel-bg: #161b22;
+            --panel-bg: #161b22; /* Dark background matching typical IDEs */
             --border-col: #30363d;
-            --accent: #238636; /* GitHub Green */
+            --accent: #238636; 
             --text-main: #c9d1d9;
             --text-dim: #8b949e;
         }
@@ -39,7 +38,7 @@
             color: var(--text-main);
         }
 
-        /* CodeMirror Customization */
+        /* --- CODEMIRROR OVERRIDES --- */
         .CodeMirror { 
             height: 100%; 
             font-family: 'JetBrains Mono', monospace; 
@@ -47,11 +46,22 @@
             line-height: 1.6;
             background-color: var(--panel-bg) !important;
         }
+
+        /* FIX: Force Gutter to match the Panel Background */
+        .CodeMirror-gutters {
+            background-color: var(--panel-bg) !important; 
+            border-right: 1px solid var(--border-col) !important;
+            white-space: nowrap;
+        }
         
-        /* Minimal Scrollbars */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        .CodeMirror-linenumber {
+            color: var(--text-dim) !important;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #58a6ff; }
 
         /* Sidebar Buttons */
@@ -65,7 +75,7 @@
             background-color: #21262d; 
             color: #58a6ff; 
             border-left: 2px solid #58a6ff;
-            padding-left: 14px; /* Slight movement effect */
+            padding-left: 14px;
         }
         
         .section-title {
@@ -79,9 +89,7 @@
             font-weight: 600;
         }
 
-        /* Utilities */
         .panel { background-color: var(--panel-bg); border: 1px solid var(--border-col); }
-        .no-outline:focus { outline: none; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
@@ -99,7 +107,6 @@
                 <option value="solarized light">Solarized Light</option>
                 <option value="material">Material</option>
                 <option value="nord">Nord</option>
-                <option value="tomorrow-night-eighties">Tomorrow Night</option>
             </select>
 
             <button id="run-btn" class="bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold px-4 py-1.5 rounded transition-colors flex items-center gap-2 border border-[rgba(240,246,252,0.1)]">
@@ -138,23 +145,23 @@
         </aside>
 
         <div class="flex flex-col flex-grow w-0 panel rounded overflow-hidden relative">
-            <div class="h-8 bg-[#21262d] border-b border-[#30363d] flex justify-between items-center px-3">
+            <div class="h-8 bg-[#21262d] border-b border-[#30363d] flex justify-between items-center px-3 shrink-0">
                 <span class="text-xs text-gray-400">main.cpp</span>
                 <button id="copy-btn" class="text-xs text-gray-500 hover:text-white transition-colors">Copy</button>
             </div>
-            <div class="flex-grow relative">
+            <div class="flex-grow relative overflow-auto">
                 <textarea id="code-editor"></textarea>
             </div>
         </div>
 
         <div class="flex flex-col w-64 gap-2 shrink-0">
             <div class="flex flex-col h-1/2 panel rounded overflow-hidden">
-                <div class="h-8 bg-[#21262d] border-b border-[#30363d] px-3 flex items-center text-xs font-semibold text-gray-400">Stdin</div>
-                <textarea id="input-box" class="w-full h-full p-3 bg-[#0d1117] text-gray-300 resize-none outline-none font-mono text-sm border-none focus:ring-0"></textarea>
+                <div class="h-8 bg-[#21262d] border-b border-[#30363d] px-3 flex items-center text-xs font-semibold text-gray-400 shrink-0">Stdin</div>
+                <textarea id="input-box" class="w-full h-full p-3 bg-[#0d1117] text-gray-300 resize-none outline-none font-mono text-sm border-none focus:ring-0 overflow-auto"></textarea>
             </div>
 
             <div class="flex flex-col h-1/2 panel rounded overflow-hidden">
-                <div class="h-8 bg-[#21262d] border-b border-[#30363d] px-3 flex justify-between items-center">
+                <div class="h-8 bg-[#21262d] border-b border-[#30363d] px-3 flex justify-between items-center shrink-0">
                     <span class="text-xs font-semibold text-gray-400">Stdout</span>
                     <span id="status" class="text-[10px] px-2 py-0.5 rounded-sm bg-[#30363d] text-gray-400">Idle</span>
                 </div>
