@@ -25,10 +25,11 @@
             font-family: 'Inter', sans-serif;
             background-color: #0c1021;
         }
+        /* Ensure CodeMirror takes full available height of its container */
         .CodeMirror {
             height: 100%;
-            font-size: 16px;
-            line-height: 1.5;
+            font-size: 15px;
+            line-height: 1.6;
             font-family: 'Fira Code', monospace;
         }
         .CodeMirror-gutters {
@@ -38,6 +39,7 @@
         .cm-s-monokai.CodeMirror { background: #272822; }
         .cm-s-solarized.light.CodeMirror { background: #fdf6e3; color: #657b83; }
 
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #1a1b26; }
         ::-webkit-scrollbar-thumb { background: #44475a; border-radius: 4px; }
@@ -60,15 +62,24 @@
         .run-button-glow {
             box-shadow: 0 0 5px #0e9f6e, 0 0 10px #0e9f6e, 0 0 15px #0e9f6e;
         }
+
+        /* Sidebar Item Hover Effect */
+        .template-item {
+            transition: all 0.2s ease;
+        }
+        .template-item:hover {
+            background-color: #374151;
+            transform: translateX(4px);
+        }
     </style>
 </head>
 <body class="text-white flex flex-col h-screen overflow-hidden">
-    <header class="bg-[#111827] border-b border-gray-700 shadow-2xl p-3 flex justify-between items-center z-20">
+    <header class="bg-[#111827] border-b border-gray-700 shadow-2xl p-3 flex justify-between items-center z-20 shrink-0">
         <div class="flex items-center gap-3">
             <svg class="w-8 h-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
             </svg>
-            <h1 class="text-xl font-bold text-gray-200">Personal C++ IDE</h1>
+            <h1 class="text-xl font-bold text-gray-200">CP IDE</h1>
         </div>
         <div class="flex items-center gap-4">
             <div class="relative">
@@ -79,62 +90,108 @@
                 <div id="theme-dropdown" class="rounded-md shadow-lg w-32 mt-2">
                     <a href="#" data-theme="dracula" class="block px-4 py-2 text-sm text-gray-200 hover:bg-cyan-500 hover:text-white rounded-t-md">Dracula</a>
                     <a href="#" data-theme="monokai" class="block px-4 py-2 text-sm text-gray-200 hover:bg-cyan-500 hover:text-white">Monokai</a>
-                    <a href="#" data-theme="solarized light" class="block px-4 py-2 text-sm text-gray-200 hover:bg-cyan-500 hover:text-white rounded-b-md">Solarized Light</a>
+                    <a href="#" data-theme="solarized light" class="block px-4 py-2 text-sm text-gray-200 hover:bg-cyan-500 hover:text-white rounded-b-md">Solarized</a>
                 </div>
             </div>
             <button id="run-button" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 flex items-center space-x-2 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 hover:run-button-glow">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>
-                <span>Run Code</span>
+                <span>Run</span>
             </button>
         </div>
     </header>
 
-    <div class="flex flex-grow overflow-hidden p-2 gap-2">
-        <div class="flex flex-col w-2/3 h-full bg-[#1e1e1e] rounded-lg shadow-lg border border-gray-700">
+    <div class="flex flex-grow overflow-hidden p-2 gap-2 h-full">
+        
+        <aside class="w-64 bg-[#111827] rounded-lg shadow-lg border border-gray-700 flex flex-col shrink-0">
+            <div class="panel-header p-3 rounded-t-lg text-sm text-gray-300 font-bold border-b border-gray-700 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Library
+            </div>
+            <div class="overflow-y-auto flex-grow p-2 space-y-2">
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2 mb-1 pl-1">Input Snippets</div>
+                
+                <button onclick="insertTemplate('basic_input')" class="template-item w-full text-left px-3 py-2 rounded text-sm text-gray-300 hover:text-white bg-[#1f2937] border border-gray-600">
+                    Input n & Array
+                </button>
+                <button onclick="insertTemplate('matrix_input')" class="template-item w-full text-left px-3 py-2 rounded text-sm text-gray-300 hover:text-white bg-[#1f2937] border border-gray-600">
+                    Input Grid (N*M)
+                </button>
+
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4 mb-1 pl-1">Math</div>
+                
+                <button onclick="insertTemplate('mod_arithmetic')" class="template-item w-full text-left px-3 py-2 rounded text-sm text-gray-300 hover:text-white bg-[#1f2937] border border-gray-600">
+                    Modular Arithmetic
+                </button>
+                <button onclick="insertTemplate('factorial')" class="template-item w-full text-left px-3 py-2 rounded text-sm text-gray-300 hover:text-white bg-[#1f2937] border border-gray-600">
+                    Factorial (nCr)
+                </button>
+                <button onclick="insertTemplate('gcd_lcm')" class="template-item w-full text-left px-3 py-2 rounded text-sm text-gray-300 hover:text-white bg-[#1f2937] border border-gray-600">
+                    GCD & LCM
+                </button>
+                
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4 mb-1 pl-1">Structures</div>
+                <button onclick="insertTemplate('dsu')" class="template-item w-full text-left px-3 py-2 rounded text-sm text-gray-300 hover:text-white bg-[#1f2937] border border-gray-600">
+                    DSU
+                </button>
+            </div>
+        </aside>
+
+        <div class="flex flex-col flex-grow w-0 h-full bg-[#1e1e1e] rounded-lg shadow-lg border border-gray-700">
             <div class="panel-header p-2 rounded-t-lg text-sm text-gray-300 font-semibold flex justify-between items-center">
-                <span>main.cpp</span>
-                <button id="copy-button" class="text-gray-400 hover:text-white transition-colors">
+                <span class="pl-2">main.cpp</span>
+                <button id="copy-button" class="text-gray-400 hover:text-white transition-colors p-1">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 4.5l-3-3m0 0l-3 3m3-3v12" /></svg>
                 </button>
             </div>
-            <div class="flex-grow relative"><textarea id="code-editor"></textarea></div>
+            <div class="flex-grow relative overflow-hidden">
+                <textarea id="code-editor"></textarea>
+            </div>
         </div>
 
-        <div class="flex flex-col w-1/3 h-full gap-2">
+        <div class="flex flex-col w-1/3 h-full gap-2 shrink-0">
             <div class="flex flex-col h-1/2 bg-[#1e1e1e] rounded-lg shadow-lg border border-gray-700">
                 <div class="panel-header p-2 rounded-t-lg text-sm text-gray-300 font-semibold flex justify-between items-center">
-                    <span>Standard Input (stdin)</span>
-                    <button id="clear-input-button" class="text-gray-400 hover:text-white transition-colors">
+                    <span class="pl-2">Standard Input</span>
+                    <button id="clear-input-button" class="text-gray-400 hover:text-white transition-colors p-1">
                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.591l6.375-6.375a1.125 1.125 0 011.591 0l6.375 6.375a1.125 1.125 0 010 1.591l-6.375 6.375a1.125 1.125 0 01-1.591 0z" /></svg>
                     </button>
                 </div>
-                <textarea id="input-box" class="w-full h-full p-3 bg-[#111827] text-gray-200 rounded-b-lg border-none focus:outline-none resize-none font-mono" placeholder="Enter input..."></textarea>
+                <textarea id="input-box" class="w-full h-full p-3 bg-[#111827] text-gray-200 rounded-b-lg border-none focus:outline-none resize-none font-mono text-sm" placeholder="Paste test cases here..."></textarea>
             </div>
 
             <div class="flex flex-col h-1/2 bg-[#1e1e1e] rounded-lg shadow-lg border border-gray-700">
                 <div class="panel-header p-2 rounded-t-lg text-sm text-gray-300 font-semibold flex justify-between items-center">
-                    <span>Output</span>
+                    <span class="pl-2">Output</span>
                     <div id="status" class="text-xs px-2.5 py-1 rounded-full font-medium"></div>
                 </div>
-                <pre id="output-box" class="w-full h-full p-3 bg-[#111827] text-gray-200 rounded-b-lg overflow-auto font-mono whitespace-pre-wrap break-words"></pre>
+                <pre id="output-box" class="w-full h-full p-3 bg-[#111827] text-gray-200 rounded-b-lg overflow-auto font-mono whitespace-pre-wrap break-words text-sm"></pre>
             </div>
         </div>
     </div>
 
     <script>
+        // --- 1. CodeMirror Setup ---
         const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
             mode: "text/x-c++src",
             theme: "dracula",
             lineNumbers: true,
             autoCloseBrackets: true,
             indentUnit: 4,
+            matchBrackets: true,
+            tabSize: 4,
+            indentWithTabs: false
         });
 
+        // Set default boilerplate
         editor.setValue(`#include <bits/stdc++.h>
-
 using namespace std;
 
+#define ll long long
+
 void solve() {
+    // Write your code here
     
 }
 
@@ -151,6 +208,110 @@ int main() {
     return 0;
 }`);
 
+        // --- 2. Template Logic ---
+        const templates = {
+            'basic_input': `    int n; 
+    cin >> n;
+    vector<int> a(n);
+    for(int i = 0; i < n; ++i) cin >> a[i];
+    `,
+            'matrix_input': `    int n, m;
+    cin >> n >> m;
+    vector<vector<int>> grid(n, vector<int>(m));
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            cin >> grid[i][j];
+        }
+    }
+    `,
+            'mod_arithmetic': `
+const int MOD = 1e9 + 7;
+
+long long binpow(long long base, long long exp) {
+    long long res = 1;
+    while (exp > 0) {
+        if (exp % 2 == 1) res = (res * base) % MOD;
+        base = (base * base) % MOD;
+        exp /= 2;
+    }
+    return res;
+}
+
+long long modInverse(long long n) {
+    return binpow(n, MOD - 2);
+}
+`,
+            'factorial': `
+const int MAXN = 2e5 + 5;
+const int MOD = 1e9 + 7;
+long long fact[MAXN], invFact[MAXN];
+
+long long binpow(long long base, long long exp) {
+    long long res = 1;
+    while (exp > 0) {
+        if (exp % 2 == 1) res = (res * base) % MOD;
+        base = (base * base) % MOD;
+        exp /= 2;
+    }
+    return res;
+}
+
+void precompute() {
+    fact[0] = 1;
+    invFact[0] = 1;
+    for (int i = 1; i < MAXN; i++) {
+        fact[i] = (fact[i - 1] * i) % MOD;
+        invFact[i] = binpow(fact[i], MOD - 2);
+    }
+}
+
+long long nCr(int n, int r) {
+    if (r < 0 || r > n) return 0;
+    return fact[n] * invFact[r] % MOD * invFact[n - r] % MOD;
+}
+`,
+            'gcd_lcm': `
+long long gcd(long long a, long long b) {
+    return b == 0 ? a : gcd(b, a % b);
+}
+
+long long lcm(long long a, long long b) {
+    return (a / gcd(a, b)) * b;
+}
+`,
+            'dsu': `
+struct DSU {
+    vector<int> parent, size;
+    DSU(int n) {
+        parent.resize(n + 1);
+        size.resize(n + 1, 1);
+        iota(parent.begin(), parent.end(), 0);
+    }
+    int find(int x) {
+        if (parent[x] == x) return x;
+        return parent[x] = find(parent[x]);
+    }
+    void unite(int x, int y) {
+        int rootX = find(x);
+        int rootY = find(y);
+        if (rootX != rootY) {
+            if (size[rootX] < size[rootY]) swap(rootX, rootY);
+            parent[rootY] = rootX;
+            size[rootX] += size[rootY];
+        }
+    }
+};
+`
+        };
+
+        function insertTemplate(key) {
+            const doc = editor.getDoc();
+            const cursor = doc.getCursor();
+            doc.replaceRange(templates[key], cursor);
+            editor.focus();
+        }
+
+        // --- 3. UI Interactions (Theme, Copy, Clear) ---
         const runButton = document.getElementById('run-button');
         const inputBox = document.getElementById('input-box');
         const outputBox = document.getElementById('output-box');
@@ -183,27 +344,22 @@ int main() {
 
         copyButton.addEventListener('click', () => {
             const code = editor.getValue();
-            const textarea = document.createElement('textarea');
-            textarea.value = code;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-
-            copyButton.innerHTML = `<svg class="w-5 h-5 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
-            setTimeout(() => {
-                copyButton.innerHTML = `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 4.5l-3-3m0 0l-3 3m3-3v12" /></svg>`;
-            }, 1500);
+            navigator.clipboard.writeText(code).then(() => {
+                const original = copyButton.innerHTML;
+                copyButton.innerHTML = `<svg class="w-5 h-5 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
+                setTimeout(() => { copyButton.innerHTML = original; }, 1500);
+            });
         });
 
         clearInputButton.addEventListener('click', () => {
             inputBox.value = '';
         });
 
+        // --- 4. API Logic (Judge0) ---
         const API_CONFIG = {
             url: 'https://judge0-ce.p.rapidapi.com/submissions',
             host: 'judge0-ce.p.rapidapi.com',
-            apiKey: 'ab79e2474cmshf8e3506939160bbp104df9jsn0ec64fadde4c'
+            apiKey: 'ab79e2474cmshf8e3506939160bbp104df9jsn0ec64fadde4c' // Warning: Exposure in client-side code
         };
 
         async function runCode() {
@@ -218,7 +374,7 @@ int main() {
             outputBox.textContent = '';
             
             const payload = {
-                language_id: 54, 
+                language_id: 54, // C++
                 source_code: btoa(sourceCode),
                 stdin: btoa(stdin)
             };
@@ -255,10 +411,7 @@ int main() {
                         }
                     });
 
-                    if (!resultResponse.ok) {
-                         const errorBody = await resultResponse.json();
-                         throw new Error(errorBody.message || resultResponse.statusText);
-                    }
+                    if (!resultResponse.ok) throw new Error(resultResponse.statusText);
                     
                     const result = await resultResponse.json();
                     if (result.status.id > 2) {
@@ -274,7 +427,7 @@ int main() {
                 statusDiv.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-red-600 text-white';
             } finally {
                 runButton.disabled = false;
-                runButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg><span>Run Code</span>`;
+                runButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg><span>Run</span>`;
                 runButton.classList.remove('opacity-70', 'cursor-not-allowed');
             }
         }
@@ -284,15 +437,15 @@ int main() {
             let statusText = result.status.description;
             let statusColor = 'bg-blue-500 text-white';
 
-            if (result.status.id === 3) { 
+            if (result.status.id === 3) { // Accepted
                 output = result.stdout ? atob(result.stdout) : '(No output)';
                 statusColor = 'bg-green-500 text-white';
             } 
-            else if (result.status.id === 6) { 
+            else if (result.status.id === 6) { // Compilation Error
                 output = result.compile_output ? atob(result.compile_output) : 'Compilation Error';
                 statusColor = 'bg-red-600 text-white';
             } 
-            else { 
+            else { // Runtime Error, TLE, etc
                 output += `Status: ${result.status.description}\n`;
                 output += `Time: ${result.time}s\n`;
                 output += `Memory: ${result.memory} KB\n\n`;
@@ -307,4 +460,3 @@ int main() {
     </script>
 </body>
 </html>
-
